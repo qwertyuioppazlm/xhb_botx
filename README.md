@@ -1,1 +1,1 @@
-# xhb_botx
+# xhb_bot
