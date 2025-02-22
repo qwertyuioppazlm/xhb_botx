@@ -1,0 +1,5 @@
+aiohttp
+telebot
+ddddocr
+Pillow
+requests
