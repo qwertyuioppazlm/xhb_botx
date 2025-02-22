@@ -1,8 +1,10 @@
 name: Python CI
 
 on:
+  schedule:
+    - cron: '0 */3 * * *'  # 每3小时触发一次
   push:
-    branches: [main, master]  # 触发分支
+    branches: [main, master]
   pull_request:
     branches: [main, master]
 
@@ -28,15 +30,11 @@ jobs:
         run: |
           pip install aiohttp telebot ddddocr pillow
 
-      - name: Run tests
+      - name: Run main script
         run: |
-          python -m unittest discover -s tests  # 假设您的测试文件在 tests 文件夹中
+          python 小伙伴bot_v1.py  # 替换为您的主脚本文件名
 
       - name: Check code quality
         run: |
           pip install flake8
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-
-      - name: Run main script
-        run: |
-          python 小伙伴bot_v1.py  # 替换为您的主脚本文件
