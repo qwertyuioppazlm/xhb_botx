@@ -1,0 +1,42 @@
+name: Python CI
+
+on:
+  push:
+    branches: [main, master]  # 触发分支
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"  # 根据您的需求调整 Python 版本
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # 确保您有一个 requirements.txt 文件
+
+      - name: Install additional dependencies
+        run: |
+          pip install aiohttp telebot ddddocr pillow
+
+      - name: Run tests
+        run: |
+          python -m unittest discover -s tests  # 假设您的测试文件在 tests 文件夹中
+
+      - name: Check code quality
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Run main script
+        run: |
+          python 小伙伴_bot.py  # 替换为您的主脚本文件
