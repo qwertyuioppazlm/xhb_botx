@@ -2,7 +2,7 @@ name: Python CI
 
 on:
   schedule:
-    - cron: '0 */3 * * *'  # 每3小时触发一次
+    - cron: '0 */4 * * *'  # 每3小时触发一次
   push:
     branches: [main, master]
   pull_request:
